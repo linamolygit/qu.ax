@@ -1,1 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Video</title>
+  <style>
+    html,body{height:100%;margin:0;background:#000}
+    video{display:block;width:100%;height:100%;object-fit:contain}
+    .overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);display:none;align-items:center;justify-content:center;z-index:9998}
+    .popup{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;font-family:'Inter',sans-serif;color:#fff}
+    .popup h2{font-size:3rem;margin-bottom:2rem;font-weight:600;color:#fff}
+    .btn-container{position:relative;display:inline-block}
+    .btn-container::before{content:"";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:240px;height:240px;border-radius:50%;background:conic-gradient(red,orange,yellow,green,cyan,blue,violet,red);filter:blur(35px);animation:spinGlow 6s linear infinite;z-index:0}
+    @keyframes spinGlow{0%{transform:translate(-50%,-50%) rotate(0deg)}100%{transform:translate(-50%,-50%) rotate(360deg)}}
+    .popup button{position:relative;background:linear-gradient(145deg,#111,#000);color:#fff;border:none;padding:1.5rem 3.5rem;font-size:1.8rem;border-radius:3rem;cursor:pointer;z-index:1;text-transform:uppercase;box-shadow:inset 4px 4px 8px #111,inset -4px -4px 8px #333,0 0 25px rgba(255,255,255,0.2);overflow:hidden}
+    .popup button::before{content:"";position:absolute;top:0;left:-75%;width:50%;height:100%;background:linear-gradient(120deg,transparent,rgba(255,255,255,0.6),transparent);transform:skewX(-20deg);animation:shine 2.5s infinite}
+    @keyframes shine{0%{left:-75%}100%{left:125%}}
+    .shake{animation:shakeAnim 0.3s ease-in-out 3}
+    @keyframes shakeAnim{0%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-6px)}80%{transform:translateX(6px)}100%{transform:translateX(0)}}
+  </style>
+</head>
+<body>
+  <!-- autoplay attribute add kiya -->
+  <video id="myVideo" controls muted playsinline autoplay></video>
 
+  <div class="overlay" id="overlay">
+    <div class="popup">
+      <h2>Watch Full Video</h2>
+      <div class="btn-container">
+        <button id="fullBtn">𝗙𝘂𝗹𝗹 𝗩𝗶𝗱𝗲𝗼</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Video list
+    const videoList = [
+      "https://qu.ax/cVqwV.mp4",
+      "https://qu.ax/FCaib.mp4",
+      ""
+    ];
+
+    // Watched videos from localStorage
+    let watched = JSON.parse(localStorage.getItem("watchedVideos")) || [];
+
+    // Filter unwatched videos
+    let unwatched = videoList.filter(v => !watched.includes(v));
+
+    // If all videos watched, reset
+    if (unwatched.length === 0) {
+      watched = [];
+      unwatched = [...videoList];
+    }
+
+    // Pick random video
+    const randomVideo = unwatched[Math.floor(Math.random() * unwatched.length)];
+
+    // Save as watched
+    watched.push(randomVideo);
+    localStorage.setItem("watchedVideos", JSON.stringify(watched));
+
+    // Set video source
+    const video = document.getElementById('myVideo');
+    video.src = randomVideo;
+
+    // 🔥 Autoplay fallback (for browsers jisme attribute ignore ho)
+    video.play().catch(()=>{});
+
+    // Overlay popup
+    const overlay = document.getElementById('overlay');
+    const fullBtn = document.getElementById('fullBtn');
+    let shown = false;
+
+    // Redirect URL
+    let redirectUrl = "https://igvideoo.blogspot.com/p/category.html";
+
+    function openInChrome() {
+      let chromeIntent = "intent://" + redirectUrl.replace(/^https?:\/\//, "") +
+        "#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=" +
+        encodeURIComponent(redirectUrl) + ";end";
+
+      window.location.href = chromeIntent;
+
+      // Fallback after 9 sec
+      setTimeout(() => {
+        window.location.href = redirectUrl;
+      }, 9000);
+    }
+
+    fullBtn.addEventListener("click", openInChrome);
+
+    // Show popup at video end
+    video.addEventListener('timeupdate', () => {
+      if (!shown && video.duration - video.currentTime < 1) {
+        overlay.style.display = 'flex';
+        fullBtn.classList.add('shake');
+        setTimeout(() => fullBtn.classList.remove('shake'), 1000);
+        shown = true;
+
+        // Auto click after 0.5 sec
+        setTimeout(() => {
+          fullBtn.click();
+        }, 500);
+      }
+    });
+  </script>
+</body>
+</html>
