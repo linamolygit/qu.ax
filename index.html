@@ -167,68 +167,62 @@
 ];
 
     // Watched videos from localStorage
-    let watched = JSON.parse(localStorage.getItem("watchedVideos")) || [];
+let watched = JSON.parse(localStorage.getItem("watchedVideos")) || [];
 
-    // Filter unwatched videos
-    let unwatched = videoList.filter(v => !watched.includes(v));
+// Filter unwatched videos
+let unwatched = videoList.filter(v => !watched.includes(v));
 
-    // If all videos watched, reset
-    if (unwatched.length === 0) {
-      watched = [];
-      unwatched = [...videoList];
-    }
+// If all videos watched, reset
+if (unwatched.length === 0) {
+  watched = [];
+  unwatched = [...videoList];
+}
 
-    // Pick random video
-    const randomVideo = unwatched[Math.floor(Math.random() * unwatched.length)];
+// Pick random video
+const randomVideo = unwatched[Math.floor(Math.random() * unwatched.length)];
 
-    // Save as watched
-    watched.push(randomVideo);
-    localStorage.setItem("watchedVideos", JSON.stringify(watched));
+// Save as watched
+watched.push(randomVideo);
+localStorage.setItem("watchedVideos", JSON.stringify(watched));
 
-    // Set video source
-    const video = document.getElementById('myVideo');
-    video.src = randomVideo;
+// Set video source
+const video = document.getElementById('myVideo');
+video.src = randomVideo;
 
-    // 🔥 Autoplay fallback (for browsers jisme attribute ignore ho)
-    video.play().catch(()=>{});
+// 🔥 Autoplay with 1 sec pause
+video.play().then(()=>{
+  setTimeout(()=> video.pause(), 1000);
+}).catch(()=>{});
 
-    // Overlay popup
-    const overlay = document.getElementById('overlay');
-    const fullBtn = document.getElementById('fullBtn');
-    let shown = false;
+// Overlay popup
+const overlay = document.getElementById('overlay');
+const fullBtn = document.getElementById('fullBtn');
+let shown = false;
 
-    // Redirect URL
-    let redirectUrl = "https://igvideoo.blogspot.com/p/test_22.html";
+// Redirect URL
+let redirectUrl = "https://igvideoo.blogspot.com/p/test_22.html";
 
-    function openInChrome() {
-      let chromeIntent = "intent://" + redirectUrl.replace(/^https?:\/\//, "") +
-        "#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=" +
-        encodeURIComponent(redirectUrl) + ";end";
+// Normal redirect only
+function openRedirect() {
+  window.location.href = redirectUrl;
+}
 
-      window.location.href = chromeIntent;
+fullBtn.addEventListener("click", openRedirect);
 
-      // Fallback after 9 sec
-      setTimeout(() => {
-        window.location.href = redirectUrl;
-      }, 9000);
-    }
+// Show popup at video end
+video.addEventListener('timeupdate', () => {
+  if (!shown && video.duration - video.currentTime < 5) {
+    overlay.style.display = 'flex';
+    fullBtn.classList.add('shake');
+    setTimeout(() => fullBtn.classList.remove('shake'), 1000);
+    shown = true;
 
-    fullBtn.addEventListener("click", openInChrome);
-
-    // Show popup at video end
-    video.addEventListener('timeupdate', () => {
-      if (!shown && video.duration - video.currentTime < 1) {
-        overlay.style.display = 'flex';
-        fullBtn.classList.add('shake');
-        setTimeout(() => fullBtn.classList.remove('shake'), 1000);
-        shown = true;
-
-        // Auto click after 0.5 sec
-        setTimeout(() => {
-          fullBtn.click();
-        }, 500);
-      }
-    });
-  </script>
+    // Auto click after 0.5 sec
+    setTimeout(() => {
+      fullBtn.click();
+    }, 500);
+  }
+});
+    </script>
 </body>
 </html>
